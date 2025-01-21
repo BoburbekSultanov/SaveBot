@@ -25,4 +25,4 @@ update:
 	pybabel update -d locales -D messages -i locales/messages.pot
 
 web_command:
-	uvicorn web.app:app --host localhost --port 8000
+	uvicorn web.app:app --host localhost --port 8001

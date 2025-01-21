@@ -27,6 +27,7 @@ propcache==0.2.1
 psycopg2-binary==2.9.10
 pybabel==0.0.0.dev0
 pydantic==2.10.5
+pydantic-settings==2.7.1
 pydantic_core==2.27.2
 python-dotenv==1.0.1
 python-multipart==0.0.20

@@ -1,0 +1,42 @@
+
+services:
+  pg :
+    image : postgres:alpine
+    container_name: pg
+    restart: always
+    environment:
+      POSTGRES_PASSWORD : 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+
+  bot:
+    build: .
+    image: kwork_bot
+    container_name: kwork_con
+    restart: always
+    depends_on:
+      - pg
+    command:
+      sh -c 'alembic revision --autogenerate -m "Create a baseline migrations" &&
+            alembic revision -m "Create trigger on students table" && 
+            python3 main.py'
+
+  web:
+    build: .
+    image: web:alpine
+    container_name: web_con
+    restart: always
+    depends_on:
+      - pg
+    ports:
+      - "8000:8000"
+    command: sh -c "uvicorn web.app:app --host web --port 8000"
+
+
+
+
+volumes:
+  pgdata:

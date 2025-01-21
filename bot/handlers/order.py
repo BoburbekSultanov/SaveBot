@@ -1,3 +1,3 @@
-from starlette.routing import Router
+from aiogram import Router
 
 order = Router()
