@@ -9,7 +9,6 @@ from utils.env_data import Config as conf
 
 
 class UsernameAndPasswordProvider(AuthProvider):
-
     async def login(
         self,
         username: str,
