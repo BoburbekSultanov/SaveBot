@@ -1,4 +1,3 @@
-from sqlalchemy import Column, DateTime, Integer, func, text
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy.future import select
@@ -65,13 +64,9 @@ class AbstractClass:
         return result
 
 
-tz=  "TIMEZONE('Asia/Tashkent', NOW())"
 class CreatedModel(Base, AbstractClass):
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower() + 's'
 
     __abstract__ = True
-    id = Column(Integer,primary_key=True,autoincrement=True)
-    created_at = Column(DateTime(timezone=True), server_default=text(tz))
-    updated_at = Column(DateTime(timezone=True), server_default=text(tz),onupdate=func.now())

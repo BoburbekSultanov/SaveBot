@@ -1,96 +1,67 @@
+import enum
+
+from aiogram.utils.markdown import text
+
 from db import Base
 from db.utils import CreatedModel
 
 from sqlalchemy.orm import DeclarativeBase, mapped_column, relationship, Mapped
-from sqlalchemy import String, Integer, ForeignKey, BigInteger
+from sqlalchemy import String, Integer, ForeignKey, BigInteger, Enum, DateTime, Column, func
+
+
+class MyEnum(enum.Enum):
+    image = "image"
+    video = "video"
+    documents = "document"
+    others = "others"
+
+
+tz = "TIMEZONE('Asia/Tashkent', NOW())"
 
 
 
 
-class User(CreatedModel):
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    first_name: Mapped[str] = mapped_column(String(255))
-    last_name: Mapped[str] = mapped_column(String(255))
-    phone_number: Mapped[str] = mapped_column(String(255))
+class Category(CreatedModel):
+    __tablename__ = "categories"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    category_type: Mapped[str] = mapped_column(Enum(MyEnum))
 
-    customers: Mapped["Customer"] = relationship(back_populates="user", cascade="all, delete-orphan")
-    employees: Mapped["Employee"] = relationship(back_populates="user", cascade="all, delete-orphan")
-
-
-
-class Customer(CreatedModel):
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-
-    user: Mapped["User"] = relationship(back_populates="customers")
-    posts: Mapped["Post"] = relationship(back_populates="customer", cascade="all, delete-orphan")
+    images: Mapped["Image"] = relationship(back_populates="user", cascade="all, delete-orphan")
+    videos: Mapped["Video"] = relationship(back_populates="user", cascade="all, delete-orphan")
+    documents: Mapped["Document"] = relationship(back_populates="user", cascade="all, delete-orphan")
+    others: Mapped["Other"] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
-class Post(CreatedModel):
-
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(String(255))
-    file: Mapped[str] = mapped_column(String(255))
-    deadline: Mapped[str] = mapped_column(String(255))
-    status: Mapped[int] = mapped_column(Integer)
-    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id", ondelete="CASCADE"))
-
-    customer: Mapped["Customer"] = relationship(back_populates="posts")
-    post_subjobs: Mapped["PostSubjob"] = relationship(back_populates="post", cascade="all, delete-orphan")
-
-
-
-class Job(CreatedModel):
-
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+class Image(CreatedModel):  # noqa
+    file_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"))
 
-    subjobs: Mapped["Subjob"] = relationship(back_populates="job", cascade="all, delete-orphan")
+    categories: Mapped["Category"] = relationship(back_populates="customer", cascade="all, delete-orphan")
 
 
-class Subjob(CreatedModel):
-
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+class Video(CreatedModel):
+    file_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
-    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id", ondelete="CASCADE"))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"))
 
-    job: Mapped["Job"] = relationship(back_populates="subjobs")
-    subjob_employees: Mapped["SubjobEmployee"] = relationship(back_populates="subjob", cascade="all, delete-orphan")
-
-
-class Employee(CreatedModel):
-
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    expirance: Mapped[str] = mapped_column(String(255))
-    linkedin: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(String(255))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    rating: Mapped[int] = mapped_column(Integer)
-    cv: Mapped[str] = mapped_column(String(255))
-
-    user: Mapped["User"] = relationship(back_populates="employees")
-    subjob_employees: Mapped["SubjobEmployee"] = relationship(back_populates="employee", cascade="all, delete-orphan")
+    categories: Mapped["Category"] = relationship(back_populates="customer", cascade="all, delete-orphan")
 
 
-class PostSubjob(CreatedModel):
-    __tablename__ = "post_subjob"
+class Document(CreatedModel): # noqa
+    file_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"))
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id", ondelete="CASCADE"))
-    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"))
-
-    post: Mapped["Post"] = relationship(back_populates="post_subjobs")
+    categories: Mapped["Category"] = relationship(back_populates="customer", cascade="all, delete-orphan")
 
 
-class SubjobEmployee(CreatedModel):
+class Other(CreatedModel):
+    file_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"))
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id", ondelete="CASCADE"))
-    subjob_id: Mapped[int] = mapped_column(ForeignKey("subjobs.id", ondelete="CASCADE"))
-
-    employee: Mapped["Employee"] = relationship(back_populates="subjob_employees")
-    subjob: Mapped["Subjob"] = relationship(back_populates="subjob_employees")
+    categories: Mapped["Category"] = relationship(back_populates="customer", cascade="all, delete-orphan")
 
 
 metadata = Base.metadata
